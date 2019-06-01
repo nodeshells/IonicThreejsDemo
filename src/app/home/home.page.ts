@@ -1,6 +1,10 @@
 import {Component, OnInit} from '@angular/core';
 
-import * as THREE from 'three';
+import * as THREES from 'three';
+import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls';
+import {Object3D} from 'three';
+
+declare const THREE: any;
 
 @Component({
   selector: 'app-home',
@@ -14,7 +18,50 @@ export class HomePage implements OnInit {
 
   ngOnInit(): void {
     // this.threejsinit();
-    this.RollingBlockinit();
+    // this.RollingBlockinit();
+    this.threedsModelinit();
+  }
+
+  threedsModelinit() {
+    // サイズを指定
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+
+    // レンダラーを作成
+    const renderer = new THREES.WebGLRenderer({
+      canvas: document.querySelector('.stage')
+    });
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setSize(width, height);
+    // シーンを作成
+    const scene = new THREES.Scene();
+    // カメラを作成
+    const camera = new THREES.PerspectiveCamera(45, width / height);
+    camera.position.set(0, 0, +100);
+    // カメラコントローラーを作成
+    const controls = new OrbitControls(camera);
+    // 平行光源を作成
+    const directionalLight = new THREES.DirectionalLight(0xffffff);
+    directionalLight.position.set(1, 1, 1);
+    scene.add(directionalLight);
+    // 環境光を追加
+    const ambientLight = new THREES.AmbientLight(0xffffff);
+    // scene.add(ambientLight);
+    // PMX形式のモデルデータを読み込む
+    const loader = new THREE.MMDLoader();
+    loader.load('assets/models/jene/jene.pmx', (object: Object3D) => {
+      object.translateY(-10);
+      scene.add(object);
+    });
+    tick();
+
+    // 毎フレーム時に実行されるループイベントです
+    function tick() {
+      // レンダリング
+      renderer.render(scene, camera);
+      renderer.shadowMap.enabled = true;
+      requestAnimationFrame(tick);
+    }
   }
 
   RollingBlockinit() {
@@ -80,6 +127,16 @@ export class HomePage implements OnInit {
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(width, height);
     renderer.render(scene, camera);
+
+    tick();
+
+    // 毎フレーム時に実行されるループイベントです
+    function tick() {
+      cube.rotation.y += 0.01;
+      renderer.render(scene, camera); // レンダリング
+
+      requestAnimationFrame(tick);
+    }
   }
 
 }
